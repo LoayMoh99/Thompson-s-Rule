@@ -341,7 +341,7 @@ while len(operators) > 0:
 if len(operands) == 0:
     print('Invalid RE!')
     exit(-1)
-# for cases: (a)(a) and likes
+# for cases: (a)(a) and likes:
 while len(operands) > 1:
     nfa2 = operands.pop()
     nfa1 = operands.pop()
