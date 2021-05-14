@@ -1,8 +1,8 @@
 import json
 import sys
-# from PySimpleAutomata import automata_IO
-# from reportlab.graphics import renderPDF, renderPM
-# from svglib.svglib import svg2rlg
+from PySimpleAutomata import automata_IO
+from reportlab.graphics import renderPDF, renderPM
+from svglib.svglib import svg2rlg
 
 
 class Transition:
@@ -348,12 +348,12 @@ while len(operands) > 1:
     operands.append(concate(nfa1, nfa2))
 finalNfa = operands.pop()
 finalNfa.show()
-# finalNfa.jsonGraphOutput()
+finalNfa.jsonGraphOutput()
 finalNfa.jsonOutput()
 
-# nfa_example = automata_IO.nfa_json_importer('graph.json')
-# automata_IO.nfa_to_dot(nfa_example, 'NFA-graph', '')
+nfa_example = automata_IO.nfa_json_importer('graph.json')
+automata_IO.nfa_to_dot(nfa_example, 'NFA-graph', '')
 
-# drawing = svg2rlg("NFA-graph.dot.svg")
-# renderPDF.drawToFile(drawing, "NFA-Graph.pdf")
-# renderPM.drawToFile(drawing, "NFA-Graph.png", fmt="PNG")
+drawing = svg2rlg("NFA-graph.dot.svg")
+renderPDF.drawToFile(drawing, "NFA-Graph.pdf")
+renderPM.drawToFile(drawing, "NFA-Graph.png", fmt="PNG")
