@@ -1,7 +1,8 @@
 import json
-from PySimpleAutomata import automata_IO
-from reportlab.graphics import renderPDF, renderPM
-from svglib.svglib import svg2rlg
+import sys
+# from PySimpleAutomata import automata_IO
+# from reportlab.graphics import renderPDF, renderPM
+# from svglib.svglib import svg2rlg
 
 
 class Transition:
@@ -120,7 +121,7 @@ def concate(nfa1, nfa2):
     ##  concatenation (.)   ##
 
     # remove second nfa initial state
-    nfa2.states.pop(0)
+    nfa2.states.pop(0)  # nfa2.states-=1
 
     # append empty Transition from final nfa1 state
     # nfa1.transitions.append(Transition(
@@ -198,9 +199,13 @@ def validate(re):
         exit(-1)
 
 
-re = input("Enter the RE:")
-# re = "(A+(L+M))*B+CD"
-# re = "(a|(l|m))*b|cd"
+if len(sys.argv) == 1:
+    print("Insert please the RE to be converted as argument:")
+    exit(-1)
+re = sys.argv[1]
+#re = input("Enter the RE:")
+#re = "1(0|1)*1(0|1)*"
+#re = "(a)(a)"
 operands = []
 operators = []  # +/| . *
 concStack = []
@@ -252,36 +257,46 @@ for char in re:
                             nfa1 = concate(nfa1, concStack.pop())
                     else:
                         nfa1 = operands.pop()
-                        # if operators[-1] == '(':
-                        #     operators.pop()
                     operands.append(union(nfa1, nfa2))
+
+            # remove last occuring (
+            if '(' in operators:
+                operators.reverse()
+                operators.remove('(')
+                operators.reverse()
         elif char == '*':
-            if parCount == 0:
-                if '(' in operators:
-                    while len(operators) != 0 and (operators.count('(') > 1 or operators[-1] != '('):
-                        oper = operators.pop()
-                        if oper == '.':  # conc
-                            nfa2 = operands.pop()
-                            nfa1 = operands.pop()
-                            operands.append(concate(nfa1, nfa2))
-                        elif oper == '|' or oper == '+':  # ORing
-                            nfa2 = operands.pop()
-                            if len(operators) != 0 and operators[-1] == '.':
-                                concStack.append(operands.pop())
+            # if parCount == 0:
+            #     if '(' in operators:
+            #         while len(operators) != 0 and (operators.count('(') > 1 or operators[-1] != '('):
+            #             oper = operators.pop()
+            #             if oper == '.':  # conc
+            #                 nfa2 = operands.pop()
+            #                 nfa1 = operands.pop()
+            #                 operands.append(concate(nfa1, nfa2))
+            #             elif oper == '|' or oper == '+':  # ORing
+            #                 nfa2 = operands.pop()
+            #                 if len(operators) != 0 and operators[-1] == '.':
+            #                     concStack.append(operands.pop())
 
-                                while len(operators) != 0 and operators[-1] == '.':
-                                    concStack.append(operands.pop())
-                                    operators.pop()
+            #                     while len(operators) != 0 and operators[-1] == '.':
+            #                         concStack.append(operands.pop())
+            #                         operators.pop()
 
-                                nfa1 = concate(concStack.pop(),
-                                               concStack.pop())
-                                while len(concStack) > 0:
-                                    nfa1 = concate(nfa1, concStack.pop())
-                            else:
-                                nfa1 = operands.pop()
-                                # if operators[-1] == '(':
-                                #     operators.pop()
-                            operands.append(union(nfa1, nfa2))
+            #                     nfa1 = concate(concStack.pop(),
+            #                                    concStack.pop())
+            #                     while len(concStack) > 0:
+            #                         nfa1 = concate(nfa1, concStack.pop())
+            #                 else:
+            #                     nfa1 = operands.pop()
+            #                     # if operators[-1] == '(':
+            #                     #     operators.pop()
+            #                 operands.append(union(nfa1, nfa2))
+
+            #             # remove last occuring (
+            #             # if '(' in operators:
+            #             #     operators.reverse()
+            #             #     operators.remove('(')
+            #             #     operators.reverse()
             operands.append(star(operands.pop()))
             concFlag = True
         elif char == '(':
@@ -323,15 +338,22 @@ while len(operators) > 0:
                 exit(-1)
             nfa1 = operands.pop()
         operands.append(union(nfa1, nfa2))
-
+if len(operands) == 0:
+    print('Invalid RE!')
+    exit(-1)
+# for cases: (a)(a) and likes
+while len(operands) > 1:
+    nfa2 = operands.pop()
+    nfa1 = operands.pop()
+    operands.append(concate(nfa1, nfa2))
 finalNfa = operands.pop()
 finalNfa.show()
-finalNfa.jsonGraphOutput()
+# finalNfa.jsonGraphOutput()
 finalNfa.jsonOutput()
 
-nfa_example = automata_IO.nfa_json_importer('graph.json')
-automata_IO.nfa_to_dot(nfa_example, 'NFA-graph', '')
+# nfa_example = automata_IO.nfa_json_importer('graph.json')
+# automata_IO.nfa_to_dot(nfa_example, 'NFA-graph', '')
 
-drawing = svg2rlg("NFA-graph.dot.svg")
-renderPDF.drawToFile(drawing, "NFA-Graph.pdf")
-renderPM.drawToFile(drawing, "NFA-Graph.png", fmt="PNG")
+# drawing = svg2rlg("NFA-graph.dot.svg")
+# renderPDF.drawToFile(drawing, "NFA-Graph.pdf")
+# renderPM.drawToFile(drawing, "NFA-Graph.png", fmt="PNG")
