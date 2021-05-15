@@ -3,37 +3,38 @@ import sys
 
 from graphviz import Source
 
-def formGraph(finalNfa):
+
+def formGraph(finalNfa, re):
+
     string = """digraph G {
                 fontsize = 30
                 rankdir = LR
                 edge [dir=forward]
              """
-
+    # add re as a title:
+    string += 'labelloc="t"'
+    string += 'label="' + re + '"'
     states = []
     for t in finalNfa.transitions:
         if t.stateTo not in states:
-                states.append(t.stateTo)
-
-    for t in finalNfa.transitions:
+            states.append(t.stateTo)
         if t.stateFrom not in states:
-                states.append(t.stateFrom)
+            states.append(t.stateFrom)
 
     states.sort()
-    
+
     string += ("start [label=start, shape=none]"+'\n')
     string += ("start ->" 'S'+str(states[0])+'\n')
 
-    string += ('S'+str(states[-1]) +'[shape=doublecircle]'+'\n')
+    string += ('S'+str(states[-1]) + '[shape=doublecircle]'+'\n')
 
-    for i in range(len(finalNfa.transitions)):         
-        string += ('S'+str(finalNfa.transitions[i].stateFrom) + "->" +'S'+str(finalNfa.transitions[i].stateTo)+  "[label="+str(finalNfa.transitions[i].symbol)+"]"+'\n')
+    for i in range(len(finalNfa.transitions)):
+        string += ('S'+str(finalNfa.transitions[i].stateFrom) + "->" + 'S'+str(
+            finalNfa.transitions[i].stateTo) + "[label="+str(finalNfa.transitions[i].symbol)+"]"+'\n')
 
     string += '}'
-
-    s = Source(string, filename="NFA.gv", format="png") 
+    s = Source(string, filename="NFA.gv", format="png")
     s.view()
-
 
 
 class Transition:
@@ -358,7 +359,6 @@ while len(operands) > 1:
 finalNfa = operands.pop()
 finalNfa.show()
 
-formGraph(finalNfa)
+formGraph(finalNfa, re)
 
 finalNfa.jsonOutput()
-
