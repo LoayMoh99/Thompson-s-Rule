@@ -30,7 +30,7 @@ class NFA:
     finalState = 0
 
     def __init__(self, arg):
-        self.states = []
+        self.states = 0
         self.transitions = []
         self.finalState = 0
         if type(arg) is int:
@@ -41,8 +41,7 @@ class NFA:
             self.transitions.append(Transition(0, 1, arg))
 
     def setStateSize(self, size):
-        for i in range(size):
-            self.states.append(i)
+        self.states = size
 
     def show(self):
         for t in self.transitions:
@@ -96,7 +95,7 @@ class NFA:
 def star(nfa):
     ##  zero or more (*)   ##
 
-    result = NFA(len(nfa.states)+2)
+    result = NFA(nfa.states+2)
     result.transitions.append(Transition(0, 1, 'ε'))
     # copy existing transition from nfa
     for t in nfa.transitions:
@@ -105,15 +104,15 @@ def star(nfa):
 
     # append empty Transition from final nfa state to new final state
     result.transitions.append(Transition(
-        len(nfa.states), len(nfa.states) + 1, 'ε'))
+        nfa.states, nfa.states + 1, 'ε'))
 
     # Loop back from last state of nfa to initial state of result
-    result.transitions.append(Transition(len(nfa.states), 1, 'ε'))
+    result.transitions.append(Transition(nfa.states, 1, 'ε'))
 
     # append empty Transition from new initial state to new final state
-    result.transitions.append(Transition(0, len(nfa.states) + 1, 'ε'))
+    result.transitions.append(Transition(0, nfa.states + 1, 'ε'))
 
-    result.finalState = len(nfa.states) + 1
+    result.finalState = nfa.states + 1
     return result
 
 
@@ -121,33 +120,32 @@ def concate(nfa1, nfa2):
     ##  concatenation (.)   ##
 
     # remove second nfa initial state
-    nfa2.states.pop(0)  # nfa2.states-=1
+    nfa2.states -= 1
 
     # append empty Transition from final nfa1 state
     # nfa1.transitions.append(Transition(
-    #     len(nfa1.states)-1, len(nfa1.states), 'ε'))
+    #     nfa1.states-1, nfa1.states, 'ε'))
 
     # copy NFA second's transitions to first, and handles connecting them:
     for t in nfa2.transitions:
         nfa1.transitions.append(Transition(
-            t.stateFrom + len(nfa1.states)-1, t.stateTo + len(nfa1.states)-1, t.symbol))
+            t.stateFrom + nfa1.states-1, t.stateTo + nfa1.states-1, t.symbol))
 
     # take second and combine to first after erasing inital second's state
-    for s in nfa2.states:
-        nfa1.states.append(s + len(nfa1.states)-1)
+    nfa1.states += nfa2.states
 
-    nfa1.finalState = len(nfa1.states) + len(nfa2.states) - 2
+    nfa1.finalState = nfa1.states + nfa2.states - 2
     return nfa1
 
 
 def union(nfa1, nfa2):
     ##  ORing (+ or |)   ##
 
-    result = NFA(len(nfa1.states) + len(nfa2.states) + 2)
+    result = NFA(nfa1.states + nfa2.states + 2)
 
     # the branching of S0 of nfa1 to beginning of result nfa
     result.transitions.append(Transition(0, 1, 'ε'))
-    result.finalState = len(nfa1.states) + len(nfa2.states) + 1
+    result.finalState = nfa1.states + nfa2.states + 1
 
     # copy existing transisitons of nfa1
     for t in nfa1.transitions:
@@ -156,19 +154,19 @@ def union(nfa1, nfa2):
 
     # transition from last nfa1 to final state
     result.transitions.append(Transition(
-        len(nfa1.states), result.finalState, 'ε'))
+        nfa1.states, result.finalState, 'ε'))
 
     # the branching of result nfa(S0) to beginning of nfa2
-    result.transitions.append(Transition(0, len(nfa1.states) + 1, 'ε'))
+    result.transitions.append(Transition(0, nfa1.states + 1, 'ε'))
 
     # copy existing transisitons of nfa2
     for t in nfa2.transitions:
         result.transitions.append(Transition(
-            t.stateFrom + len(nfa1.states) + 1, t.stateTo + len(nfa1.states) + 1, t.symbol))
+            t.stateFrom + nfa1.states + 1, t.stateTo + nfa1.states + 1, t.symbol))
 
     # transition from last of nfa2 to final state
     result.transitions.append(Transition(
-        len(nfa2.states) + len(nfa1.states), result.finalState, 'ε'))
+        nfa2.states + nfa1.states, result.finalState, 'ε'))
 
     return result
 
@@ -232,7 +230,7 @@ for char in re:
     else:
         if char == ')':
             concFlag = False
-            if not regexOperator(re[index]):
+            if index != len(re) and not regexOperator(re[index]):
                 concFlag = True
             if parCount == 0:
                 print('Invalid RE -> more ) than (')
