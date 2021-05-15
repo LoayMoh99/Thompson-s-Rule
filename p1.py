@@ -76,13 +76,13 @@ class NFA:
                 graphData['alphabet'].append(str(t.symbol))
 
         graphData['states'] = []
-        for t in self.states:
-            if t not in graphData['states']:
-                graphData['states'].append('S'+str(self.states[t]))
-
-        graphData['initial_states'] = ['S'+str(self.states[0])]
-
-        graphData['accepting_states'] = ['S'+str(self.states[-1])]
+        for t in self.transitions:
+            if t.stateFrom not in graphData['states']:
+                graphData['states'].append('S'+str(t.stateFrom))
+            if t.stateTo not in graphData['states']:
+                graphData['states'].append('S'+str(t.stateTo))
+        graphData['accepting_states'] = ['S'+str(t.stateTo)]
+        graphData['initial_states'] = ['S0']
 
         graphData['transitions'] = []
         for t in self.transitions:
@@ -199,12 +199,12 @@ def validate(re):
         exit(-1)
 
 
-if len(sys.argv) == 1:
-    print("Insert please the RE to be converted as argument:")
-    exit(-1)
-re = sys.argv[1]
+# if len(sys.argv) == 1:
+#     print("Insert please the RE to be converted as argument:")
+#     exit(-1)
+# re = sys.argv[1]
 #re = input("Enter the RE:")
-#re = "1(0|1)*1(0|1)*"
+re = "1(0|1)*1(0|1)*"
 #re = "(abc)d"
 operands = []
 operators = []  # +/| . *
@@ -300,7 +300,7 @@ for char in re:
             operands.append(star(operands.pop()))
             concFlag = True
         elif char == '(':
-            if index-2 > 0 and not regexOperator(re[index-2]):
+            if index-2 >= 0 and not regexOperator(re[index-2]):
                 operators.append('.')
                 concFlag = False
             operators.append(char)
