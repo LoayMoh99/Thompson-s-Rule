@@ -58,9 +58,11 @@ class NFA:
                 data['S'+str(t.stateFrom)]['isTerminatingState'] = False
             if t.symbol == 'ε':
                 t.symbol = 'eps'  # i don't know why ε is written as unicode in json -> \u03b5 😠
+            if t.symbol not in data['S'+str(t.stateFrom)].keys():
+                data['S'+str(t.stateFrom)][t.symbol] = []
 
-            data['S'+str(t.stateFrom)][t.symbol] = 'S'+str(t.stateTo)
-        # terminating state
+            data['S'+str(t.stateFrom)][t.symbol].append('S'+str(t.stateTo))
+            # terminating state
         data['S'+str(t.stateTo)] = {}
         data['S'+str(t.stateTo)]['isTerminatingState'] = True
         with open('data.json', 'w') as outfile:
