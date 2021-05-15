@@ -205,7 +205,7 @@ if len(sys.argv) == 1:
 re = sys.argv[1]
 #re = input("Enter the RE:")
 #re = "1(0|1)*1(0|1)*"
-#re = "(a)(a)"
+#re = "(abc)d"
 operands = []
 operators = []  # +/| . *
 concStack = []
@@ -229,7 +229,7 @@ for char in re:
     else:
         if char == ')':
             concFlag = False
-            if index < len(re) and not regexOperator(re[index]):
+            if not regexOperator(re[index]):
                 concFlag = True
             if parCount == 0:
                 print('Invalid RE -> more ) than (')
@@ -300,7 +300,7 @@ for char in re:
             operands.append(star(operands.pop()))
             concFlag = True
         elif char == '(':
-            if not regexOperator(re[index-2]):
+            if index-2 > 0 and not regexOperator(re[index-2]):
                 operators.append('.')
                 concFlag = False
             operators.append(char)
