@@ -1,8 +1,39 @@
 import json
 import sys
-from PySimpleAutomata import automata_IO
-from reportlab.graphics import renderPDF, renderPM
-from svglib.svglib import svg2rlg
+
+from graphviz import Source
+
+def formGraph(finalNfa):
+    string = """digraph G {
+                fontsize = 30
+                rankdir = LR
+                edge [dir=forward]
+             """
+
+    states = []
+    for t in finalNfa.transitions:
+        if t.stateTo not in states:
+                states.append(t.stateTo)
+
+    for t in finalNfa.transitions:
+        if t.stateFrom not in states:
+                states.append(t.stateFrom)
+
+    states.sort()
+    
+    string += ("start [label=start, shape=none]"+'\n')
+    string += ("start ->" 'S'+str(states[0])+'\n')
+
+    string += ('S'+str(states[-1]) +'[shape=doublecircle]'+'\n')
+
+    for i in range(len(finalNfa.transitions)):         
+        string += ('S'+str(finalNfa.transitions[i].stateFrom) + "->" +'S'+str(finalNfa.transitions[i].stateTo)+  "[label="+str(finalNfa.transitions[i].symbol)+"]"+'\n')
+
+    string += '}'
+
+    s = Source(string, filename="NFA.gv", format="png") 
+    s.view()
+
 
 
 class Transition:
@@ -67,31 +98,6 @@ class NFA:
         data['S'+str(t.stateTo)]['isTerminatingState'] = True
         with open('data.json', 'w') as outfile:
             json.dump(data, outfile)
-
-    # outputing json file for graph
-    def jsonGraphOutput(self):
-        graphData = {}
-        graphData['alphabet'] = []
-        for t in self.transitions:
-            if str(t.symbol) not in graphData['alphabet']:
-                graphData['alphabet'].append(str(t.symbol))
-
-        graphData['states'] = []
-        for t in self.transitions:
-            if t.stateFrom not in graphData['states']:
-                graphData['states'].append('S'+str(t.stateFrom))
-            if t.stateTo not in graphData['states']:
-                graphData['states'].append('S'+str(t.stateTo))
-        graphData['accepting_states'] = ['S'+str(t.stateTo)]
-        graphData['initial_states'] = ['S0']
-
-        graphData['transitions'] = []
-        for t in self.transitions:
-            graphData['transitions'].append(
-                ['S'+str(t.stateFrom), str(t.symbol), 'S'+str(t.stateTo)])
-
-        with open('graph.json', 'w') as outfile:
-            json.dump(graphData, outfile)
 
 
 def star(nfa):
@@ -351,12 +357,8 @@ while len(operands) > 1:
     operands.append(concate(nfa1, nfa2))
 finalNfa = operands.pop()
 finalNfa.show()
-finalNfa.jsonGraphOutput()
+
+formGraph(finalNfa)
+
 finalNfa.jsonOutput()
 
-nfa_example = automata_IO.nfa_json_importer('graph.json')
-automata_IO.nfa_to_dot(nfa_example, 'NFA-graph', '')
-
-drawing = svg2rlg("NFA-graph.dot.svg")
-renderPDF.drawToFile(drawing, "NFA-Graph.pdf")
-renderPM.drawToFile(drawing, "NFA-Graph.png", fmt="PNG")
