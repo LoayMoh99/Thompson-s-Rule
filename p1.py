@@ -193,18 +193,21 @@ def validate(re):
             if (c == ')' or c == '(') and count == len(re):
                 print('Invalid RE!')
                 exit(-1)
+        if c == ')' and prevChar == '(':
+            print('Invalid RE!')
+            exit(-1)
         prevChar = c
     if prevChar == '|' or prevChar == '+' or prevChar == '(':
         print('Invalid RE!')
         exit(-1)
 
 
-# if len(sys.argv) == 1:
-#     print("Insert please the RE to be converted as argument:")
-#     exit(-1)
-# re = sys.argv[1]
+if len(sys.argv) == 1:
+    print("Insert please the RE to be converted as argument:")
+    exit(-1)
+re = sys.argv[1]
 #re = input("Enter the RE:")
-re = "1(0|1)*1(0|1)*"
+#re = "1(0|1)*1(0|1)*"
 #re = "(abc)d"
 operands = []
 operators = []  # +/| . *
