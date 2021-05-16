@@ -4,6 +4,9 @@ import sys
 from graphviz import Source
 
 
+squares = {}
+
+
 def formGraph(finalNfa, re):
 
     string = """digraph G {
@@ -27,11 +30,21 @@ def formGraph(finalNfa, re):
     string += ("start ->" 'S'+str(states[0])+'\n')
 
     string += ('S'+str(states[-1]) + '[shape=doublecircle]'+'\n')
-
+    sqCount = 0
+    changed = False
     for i in range(len(finalNfa.transitions)):
+        changed = False
+        if finalNfa.transitions[i].symbol == '_':
+            sqString = squares[sqCount]
+            finalNfa.transitions[i].symbol = "Square"+str(sqCount+1)
+            # sqString -> error in render due to [ , ] , - , spcae , ..
+            print("Square"+str(sqCount+1)+" = ["+sqString+"]")
+            sqCount += 1
+            changed = True
         string += ('S'+str(finalNfa.transitions[i].stateFrom) + "->" + 'S'+str(
             finalNfa.transitions[i].stateTo) + "[label="+str(finalNfa.transitions[i].symbol)+"]"+'\n')
-
+        if changed:
+            finalNfa.transitions[i].symbol = "["+sqString+"]"
     string += '}'
     s = Source(string, filename="NFA.gv", format="png")
     s.view()
@@ -76,29 +89,40 @@ class NFA:
         self.states = size
 
     def show(self):
+        sqCount = 0
         for t in self.transitions:
+            changed = False
+            if t.symbol == '_':
+                changed = True
+                t.symbol = "["+squares[sqCount]+"]"
+                sqCount += 1
             print("(" + str(t.stateFrom) + ", " +
                   t.symbol + ", " + str(t.stateTo) + ")")
+            if changed:
+                t.symbol = '_'
 
     # outputing for json file
     def jsonOutput(self):
         data = {}
         data['startingState'] = 'S0'
+        sqCount = 0
         for t in self.transitions:
             if 'S'+str(t.stateFrom) not in data.keys():
                 data['S'+str(t.stateFrom)] = {}
                 data['S'+str(t.stateFrom)]['isTerminatingState'] = False
             if t.symbol == 'ε':
-                t.symbol = 'eps'  # i don't know why ε is written as unicode in json -> \u03b5 😠
+                t.symbol = 'Epsilon'  # i don't know why ε is written as unicode in json -> \u03b5 😠
             if t.symbol not in data['S'+str(t.stateFrom)].keys():
                 data['S'+str(t.stateFrom)][t.symbol] = []
-
+            if t.symbol == '_':
+                t.symbol = squares[sqCount]
+                sqCount += 1
             data['S'+str(t.stateFrom)][t.symbol].append('S'+str(t.stateTo))
             # terminating state
         data['S'+str(t.stateTo)] = {}
         data['S'+str(t.stateTo)]['isTerminatingState'] = True
         with open('data.json', 'w') as outfile:
-            json.dump(data, outfile)
+            json.dump(data, outfile, indent=4)
 
 
 def star(nfa):
@@ -209,13 +233,41 @@ def validate(re):
         exit(-1)
 
 
+def dealWithSqBrackets(re):
+    re_edit = ""
+    inSqBr = False
+    squareNo = 1
+    for char in re:
+        if char == '[':
+            if not inSqBr:
+                squareNo -= 1
+            inSqBr = True
+        elif char == ']':
+            inSqBr = False
+            squareNo += 1
+        elif inSqBr:
+            if squareNo in squares:
+                squares[squareNo] += (char)
+            else:
+                squares[squareNo] = char
+                re_edit += '_'
+        else:
+            re_edit += char
+
+    return re_edit
+
+
 if len(sys.argv) == 1:
     print("Insert please the RE to be converted as argument:")
     exit(-1)
 re = sys.argv[1]
-#re = input("Enter the RE:")
-#re = "1(0|1)*1(0|1)*"
-#re = "(abc)d"
+# re = "A[A-Za-z[dssd]]|[0-9[gffg]]*BC(F|D)"
+# re = input("Enter the RE:")
+# re = "1(0|1)*1(0|1)*"
+# re = "(abc)d"
+re_old = re
+re = dealWithSqBrackets(re)
+
 operands = []
 operators = []  # +/| . *
 concStack = []
@@ -359,6 +411,6 @@ while len(operands) > 1:
 finalNfa = operands.pop()
 finalNfa.show()
 
-formGraph(finalNfa, re)
+formGraph(finalNfa, re_old)
 
 finalNfa.jsonOutput()
