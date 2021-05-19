@@ -232,6 +232,7 @@ def validate(re):
 
         if c == '(':
             inBr = True
+            charCountInBr = 0 # this is the thing i know was missing bss makontsh 3arf a7otha fen :D
         elif c == ')':
             inBr = False
 
