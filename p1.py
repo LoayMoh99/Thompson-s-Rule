@@ -90,6 +90,7 @@ class NFA:
 
     def show(self):
         sqCount = 0
+        print(squares)
         for t in self.transitions:
             changed = False
             if t.symbol == '_':
@@ -121,7 +122,7 @@ class NFA:
             # terminating state
         data['S'+str(t.stateTo)] = {}
         data['S'+str(t.stateTo)]['isTerminatingState'] = True
-        with open('data.json', 'w') as outfile:
+        with open('nfa.json', 'w') as outfile:
             json.dump(data, outfile, indent=4)
 
 
@@ -210,13 +211,18 @@ def regexOperator(c):
 
 def validate(re):
     prevChar = None
+    prevNonPerences = None
     count = 0
     if len(re) == 0 or re[0] == '*' or re[0] == '|' or re[0] == '+':
         print('Invalid RE!')
         exit(-1)
     for c in re:
         count += 1
+        # if c == '*' and prevNonPerences == '*':
+        #     print('Invalid RE!')
+        #     exit(-1)
         if c == '*' or c == '|' or c == '+':
+            prevNonPerences = c
             if prevChar == c:
                 print('Invalid RE!')
                 exit(-1)
@@ -224,7 +230,7 @@ def validate(re):
             if (c == ')' or c == '(') and count == len(re):
                 print('Invalid RE!')
                 exit(-1)
-        if c == ')' and prevChar == '(':
+        if (c == ')' or c == '*') and prevChar == '(':
             print('Invalid RE!')
             exit(-1)
         prevChar = c
@@ -236,15 +242,19 @@ def validate(re):
 def dealWithSqBrackets(re):
     re_edit = ""
     inSqBr = False
-    squareNo = 1
+    embeddedSq = False
+    squareNo = 0
     for char in re:
         if char == '[':
-            if not inSqBr:
-                squareNo -= 1
+            # if inSqBr:
+            #     embeddedSq = True
+            # else:
+            #     embeddedSq = False
             inSqBr = True
+
         elif char == ']':
-            inSqBr = False
             squareNo += 1
+            inSqBr = False
         elif inSqBr:
             if squareNo in squares:
                 squares[squareNo] += (char)
@@ -257,12 +267,11 @@ def dealWithSqBrackets(re):
     return re_edit
 
 
-if len(sys.argv) == 1:
-    print("Insert please the RE to be converted as argument:")
-    exit(-1)
-re = sys.argv[1]
+if len(sys.argv) > 1:
+    re = sys.argv[1]
 # re = "A[A-Za-z[dssd]]|[0-9[gffg]]*BC(F|D)"
-# re = input("Enter the RE:")
+else:
+    re = input("Enter the RE:")
 # re = "1(0|1)*1(0|1)*"
 # re = "(abc)d"
 re_old = re
@@ -290,9 +299,9 @@ for char in re:
             concFlag = True
     else:
         if char == ')':
-            concFlag = False
-            if index != len(re) and not regexOperator(re[index]):
-                concFlag = True
+            concFlag = True
+            # if index != len(re) and not regexOperator(re[index]):
+            #     concFlag = True
             if parCount == 0:
                 print('Invalid RE -> more ) than (')
                 exit(-1)
@@ -323,46 +332,12 @@ for char in re:
 
             # remove last occuring (
             if '(' in operators:
-                operators.reverse()
-                operators.remove('(')
-                operators.reverse()
+                operators.pop()
         elif char == '*':
-            # if parCount == 0:
-            #     if '(' in operators:
-            #         while len(operators) != 0 and (operators.count('(') > 1 or operators[-1] != '('):
-            #             oper = operators.pop()
-            #             if oper == '.':  # conc
-            #                 nfa2 = operands.pop()
-            #                 nfa1 = operands.pop()
-            #                 operands.append(concate(nfa1, nfa2))
-            #             elif oper == '|' or oper == '+':  # ORing
-            #                 nfa2 = operands.pop()
-            #                 if len(operators) != 0 and operators[-1] == '.':
-            #                     concStack.append(operands.pop())
-
-            #                     while len(operators) != 0 and operators[-1] == '.':
-            #                         concStack.append(operands.pop())
-            #                         operators.pop()
-
-            #                     nfa1 = concate(concStack.pop(),
-            #                                    concStack.pop())
-            #                     while len(concStack) > 0:
-            #                         nfa1 = concate(nfa1, concStack.pop())
-            #                 else:
-            #                     nfa1 = operands.pop()
-            #                     # if operators[-1] == '(':
-            #                     #     operators.pop()
-            #                 operands.append(union(nfa1, nfa2))
-
-            #             # remove last occuring (
-            #             # if '(' in operators:
-            #             #     operators.reverse()
-            #             #     operators.remove('(')
-            #             #     operators.reverse()
             operands.append(star(operands.pop()))
             concFlag = True
         elif char == '(':
-            if index-2 >= 0 and not regexOperator(re[index-2]):
+            if index-2 >= 0 and (not regexOperator(re[index-2]) or re[index-2] == '*'):
                 operators.append('.')
                 concFlag = False
             operators.append(char)
@@ -403,11 +378,7 @@ while len(operators) > 0:
 if len(operands) == 0:
     print('Invalid RE!')
     exit(-1)
-# for cases: (a)(a) and likes:
-while len(operands) > 1:
-    nfa2 = operands.pop()
-    nfa1 = operands.pop()
-    operands.append(concate(nfa1, nfa2))
+
 finalNfa = operands.pop()
 finalNfa.show()
 
