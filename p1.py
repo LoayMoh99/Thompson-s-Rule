@@ -232,6 +232,7 @@ def validate(re):
 
         if c == '(':
             inBr = True
+            charCountInBr = 0
         elif c == ')':
             inBr = False
 
@@ -397,6 +398,9 @@ while len(operators) > 0:
             nfa1 = operands.pop()
         operands.append(union(nfa1, nfa2))
 if len(operands) == 0:
+    print('Invalid RE!')
+    exit(-1)
+if parCount > 0:
     print('Invalid RE!')
     exit(-1)
 
