@@ -35,10 +35,10 @@ def formGraph(finalNfa, re):
     for i in range(len(finalNfa.transitions)):
         changed = False
         if finalNfa.transitions[i].symbol == '_':
-            sqString = squares[sqCount]
-            finalNfa.transitions[i].symbol = "Square"+str(sqCount+1)
+            sqString = str(squares[sqCount])
+            # "Square"+str(sqCount+1)
+            finalNfa.transitions[i].symbol = sqString
             # sqString -> error in render due to [ , ] , - , spcae , ..
-            print("Square"+str(sqCount+1)+" = ["+sqString+"]")
             sqCount += 1
             changed = True
         string += ('S'+str(finalNfa.transitions[i].stateFrom) + "->" + 'S'+str(
@@ -90,12 +90,11 @@ class NFA:
 
     def show(self):
         sqCount = 0
-        print(squares)
         for t in self.transitions:
             changed = False
             if t.symbol == '_':
                 changed = True
-                t.symbol = "["+squares[sqCount]+"]"
+                t.symbol = squares[sqCount]
                 sqCount += 1
             print("(" + str(t.stateFrom) + ", " +
                   t.symbol + ", " + str(t.stateTo) + ")")
@@ -211,18 +210,32 @@ def regexOperator(c):
 
 def validate(re):
     prevChar = None
-    prevNonPerences = None
+    inBr = False
+    prevNonPerences = False
+    charCountInBr = 0
     count = 0
     if len(re) == 0 or re[0] == '*' or re[0] == '|' or re[0] == '+':
         print('Invalid RE!')
         exit(-1)
     for c in re:
         count += 1
-        # if c == '*' and prevNonPerences == '*':
-        #     print('Invalid RE!')
-        #     exit(-1)
+        if c == '*' and prevNonPerences and charCountInBr == 1:
+            print('Invalid RE!')
+            exit(-1)
+        if c == '*':
+            prevNonPerences = True
+        elif c != ')':
+            prevNonPerences = False
+
+        if inBr and not regexOperator(c):
+            charCountInBr += 1
+
+        if c == '(':
+            inBr = True
+        elif c == ')':
+            inBr = False
+
         if c == '*' or c == '|' or c == '+':
-            prevNonPerences = c
             if prevChar == c:
                 print('Invalid RE!')
                 exit(-1)
@@ -234,6 +247,7 @@ def validate(re):
             print('Invalid RE!')
             exit(-1)
         prevChar = c
+
     if prevChar == '|' or prevChar == '+' or prevChar == '(':
         print('Invalid RE!')
         exit(-1)
@@ -242,14 +256,12 @@ def validate(re):
 def dealWithSqBrackets(re):
     re_edit = ""
     inSqBr = False
-    embeddedSq = False
     squareNo = 0
     for char in re:
         if char == '[':
-            # if inSqBr:
-            #     embeddedSq = True
-            # else:
-            #     embeddedSq = False
+            if inSqBr:
+                print('Invalid RE! -> cant concatenate square brackets')
+                exit(-1)
             inSqBr = True
 
         elif char == ']':
@@ -257,9 +269,18 @@ def dealWithSqBrackets(re):
             inSqBr = False
         elif inSqBr:
             if squareNo in squares:
-                squares[squareNo] += (char)
+                if char == '-' and squares[squareNo].isnumeric():
+                    squares[squareNo] += str('.')
+                elif char == '-':
+                    squares[squareNo] += str('_')
+                else:
+                    squares[squareNo] += str(char)
+
             else:
-                squares[squareNo] = char
+                if char == '-':
+                    squares[squareNo] = str('_')
+                else:
+                    squares[squareNo] = str(char)
                 re_edit += '_'
         else:
             re_edit += char
