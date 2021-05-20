@@ -11,7 +11,7 @@ and you will be prompted afterwards to input the regular expression
 ## Assumptions
 1- The underscore symbol '_' was used to handle the square brackets so it can't be used in the input regular expression
 
-2- We always start with S0, sort of like a naming convention.
+2- We always start with S0 as the initial state, sort of like a naming convention.
 
 3- We always have one final state meaning that even if there is originally more than one final state, they'll go with ε to one common final state.
 
