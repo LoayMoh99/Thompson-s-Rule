@@ -24,5 +24,5 @@ and then you will be prompted afterwards to input the regular expression.
 
 
 ## Valid Regular Expressions:
-You can use any alphabetic or numeric values, also you can use [] and ().
-Although you can enter any special character but the drawing library may not handle to draw it.
+You can use any alphabet or numeric. Also, you can use square [] and round () brackets.
+You can enter any special characters. The drawing library though might not be able to handle drawing it.
