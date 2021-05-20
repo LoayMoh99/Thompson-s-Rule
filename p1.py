@@ -256,16 +256,19 @@ def validate(re):
 
 def dealWithSqBrackets(re):
     re_edit = ""
+    sqBrCount = 0
     inSqBr = False
     squareNo = 0
     for char in re:
         if char == '[':
+            sqBrCount += 1
             if inSqBr:
                 print('Invalid RE! -> cant concatenate square brackets')
                 exit(-1)
             inSqBr = True
 
         elif char == ']':
+            sqBrCount -= 1
             squareNo += 1
             inSqBr = False
         elif inSqBr:
@@ -285,7 +288,9 @@ def dealWithSqBrackets(re):
                 re_edit += '_'
         else:
             re_edit += char
-
+    if sqBrCount < 0:
+        print('Invalid RE -> more ] than [')
+        exit(-1)
     return re_edit
 
 
