@@ -11,7 +11,6 @@ python p1.py
 ```
 and then you will be prompted afterwards to input the regular expression.
 
-
 ## Assumptions
 1- The underscore symbol '_' was used to handle the square brackets so it can't be used in the input regular expression.
 
@@ -22,3 +21,8 @@ and then you will be prompted afterwards to input the regular expression.
 4- We always have one final state meaning that even if there is originally more than one final state, they'll go with ε to one common final state.
 
 5- In concatention, we don't use ε between the transition in states.
+
+
+## Valid Regular Expressions:
+You can use any alphabet or numeric. Also, you can use square [] and round () brackets.
+You can enter any special characters. The drawing library though might not be able to handle drawing it.
