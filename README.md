@@ -1,5 +1,6 @@
 # Thompson's-Rule
 
+# For p1.py
 ## How to run
 Run this command:
 ```bash
@@ -26,3 +27,16 @@ and then you will be prompted afterwards to input the regular expression.
 ## Valid Regular Expressions:
 You can use any alphabet or numeric. Also, you can use square [] and round () brackets.
 You can enter any special characters. The drawing library though might not be able to handle drawing it.
+
+
+
+# For p2.py
+## How to run
+1- Place the nfa.json file with the p2.py file in the same folder 
+
+2- Run the command:
+```bash
+python p2.py 
+```
+3- The output dfa.json file will appear in the same folder
+
