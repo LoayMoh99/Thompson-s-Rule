@@ -1,6 +1,4 @@
 # Thompson's-Rule
-
-# For p1.py
 ## How to run
 Run this command:
 ```bash
@@ -30,7 +28,7 @@ You can enter any special characters. The drawing library though might not be ab
 
 
 
-# For p2.py
+# NFA to DFA Conversion
 ## How to run
 1- Place the nfa.json file with the p2.py file in the same folder 
 
