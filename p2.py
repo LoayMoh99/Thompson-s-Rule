@@ -121,6 +121,9 @@ for tr in dfa.transitions:
     if tr.nodeFrom.name not in out.keys():
         out[tr.nodeFrom.name] = {}
         out[tr.nodeFrom.name]['isTerminatingState'] = tr.nodeFrom.finalNode
+    if tr.nodeTo.name not in out.keys():
+        out[tr.nodeTo.name] = {}
+        out[tr.nodeTo.name]['isTerminatingState'] = tr.nodeTo.finalNode
     if tr.symbol not in out[tr.nodeFrom.name].keys():
         out[tr.nodeFrom.name][tr.symbol] = []
     out[tr.nodeFrom.name][tr.symbol].append(tr.nodeTo.name)
