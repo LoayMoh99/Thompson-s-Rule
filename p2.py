@@ -40,7 +40,8 @@ class Node:
                 self.finalNode = self.finalNode or data[s][other]
             if other == "Epsilon":
                 for same in data[s][other]:
-                    self.add(same)
+                    if same not in self.states:
+                        self.add(same)
 
 
 class DFA:
@@ -78,8 +79,8 @@ class DFA:
                 if tr.nodeFrom.states == t.nodeFrom.states:  # same symbol and same nodeFrom ->integrate nodeTo
                     for st in tr.nodeTo.states:
                         t.nodeTo.states.append(st)
-                    t.nodeTo.finalNode = tr.nodeTo.finalNode
-                    t.nodeTo.startNode = tr.nodeTo.startNode
+                    t.nodeTo.finalNode = t.nodeTo.finalNode or tr.nodeTo.finalNode
+                    t.nodeTo.startNode = t.nodeTo.startNode or tr.nodeTo.startNode
                     return False
         return True
 
@@ -88,6 +89,7 @@ class DFA:
             node.name = 'N'+str(len(self.nodes))
             self.nodes.append(node)
             sortedNodeStates = sorted(node.states)
+
             for state in sortedNodeStates:
                 # print(state)
                 for input in data[state]:
@@ -96,6 +98,12 @@ class DFA:
                         n = Node()
                         for newstate in data[state][input]:
                             n.add(newstate)
+                        # check if same (state) with same (input) -> concatenate node (n)
+                        for state2 in sortedNodeStates:
+                            for input2 in data[state2]:
+                                if state != state2 and input2 != "Epsilon" and input2 != "isTerminatingState" and input2 == input:
+                                    for newstate2 in data[state2][input2]:
+                                        n.add(newstate2)
 
                         t = Transition(node, n, input)
                         if self.checkExistenceTransition(t):
@@ -124,8 +132,8 @@ for tr in dfa.transitions:
     if tr.nodeTo.name not in out.keys():
         out[tr.nodeTo.name] = {}
         out[tr.nodeTo.name]['isTerminatingState'] = tr.nodeTo.finalNode
-    if tr.symbol not in out[tr.nodeFrom.name].keys():
-        out[tr.nodeFrom.name][tr.symbol] = []
-    out[tr.nodeFrom.name][tr.symbol].append(tr.nodeTo.name)
+    # if tr.symbol not in out[tr.nodeFrom.name].keys():
+    #     out[tr.nodeFrom.name][tr.symbol] = []
+    out[tr.nodeFrom.name][tr.symbol] = tr.nodeTo.name
 with open('dfa.json', 'w') as outfile:
     json.dump(out, outfile, indent=4)
